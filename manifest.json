@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "JKLM Bombparty Word Suggester",
+  "description": "This extension suggest the words that could be used for JKLM Bombparty game.",
+  "author": "Meharpreet Singh",
+  "version": "0.0.1",
+  "action": {
+    "default_popup": "index.html",
+    "default_icon": "resources/img/icon.png"
+  },
+  "permissions": ["tabs", "activeTab", "storage"],
+  "content_scripts": [
+    {
+      "all_frames": true,
+      "js": ["resources/scripts/jklm.js"],
+      "matches": ["https://*.jklm.fun/*", "https://jklm.fun/*"]
+    }
+  ]
+}
