@@ -267784,6 +267784,13 @@ const getHint = (syllable) => {
 };
 
 const addHintText = () => {
+  // console.log("[addHintText] Function Called!");
+  const syllable = getCurrentSyllable();
+  if (!(syllable !== "" && syllable !== lastSyllable)) return;
+  lastSyllable = syllable;
+  console.log(`[addHintText] CurrentSyllable = ${syllable}`);
+  const hintWord = getHint(syllable);
+  usedWords.push(hintWord);
   try {
     hintElement = document.querySelector("#hint");
     if (hintElement == undefined || hintElement == null) {
@@ -267792,49 +267799,43 @@ const addHintText = () => {
       hint.id = "hint";
       quickRules.append(hint);
     }
+    hintElement = document.querySelector("#hint");
+    hintElement.innerHTML = `&nbsp;&nbsp;&nbsp;&nbsp; ${syllable} :: ${hintWord}`;
   } catch (error) {
     // Do Nothing
   }
-  // console.log("[addHintText] Function Called!");
-  const syllable = getCurrentSyllable();
-  if (!(syllable !== "" && syllable !== lastSyllable)) return;
-  lastSyllable = syllable;
-  console.log(`[addHintText] CurrentSyllable = ${syllable}`);
-  const hintWord = getHint(syllable);
-  usedWords.push(hintWord);
-  hintElement.innerHTML = `&nbsp;&nbsp;&nbsp;&nbsp; ${syllable} :: ${hintWord}`;
+
   try {
-    const ke = new KeyboardEvent("keydown", {
-      bubbles: true,
-      cancelable: true,
-      keyCode: 13,
-    });
     const selfTurn = document.querySelector(".selfTurn");
     if (!selfTurn) return;
     if (selfTurn.getAttribute("hidden") != null) {
-      // const sideChat = document.querySelector(".sidebar>.chat .input textarea");
-      // if (sideChat == null) return;
-      // sideChat.value = hintWord;
-      // sideChat.dispatchEvent(ke);
+      //   // const sideChat = document.querySelector(".sidebar>.chat .input textarea");
+      //   // if (sideChat == null) return;
+      //   // sideChat.value = hintWord;
+      //   // sideChat.dispatchEvent(ke);
     } else {
       const selfTurnInput = document.querySelector(".selfTurn form input");
-
       if (selfTurnInput == null) return;
 
-      let writter;
-      const textLength = text.length;
-      let i = 0;
-      writter = setInterval(() => {
-        if (i === textLength && writter) {
-          clearInterval(writter);
-        } else {
-          selfTurnInput.value += text[i];
-          i++;
-        }
-      }, 100);
+      // let writter;
+      // const textLength = text.length;
+      // let i = 0;
+      // writter = setInterval(() => {
+      //   if (i === textLength && writter) {
+      //     clearInterval(writter);
+      //   } else {
+      //     selfTurnInput.value += text[i];
+      //     i++;
+      //   }
+      // }, 100);
 
-      // selfTurnInput.value = hintWord;
-      selfTurnInput.dispatchEvent(ke);
+      selfTurnInput.value = hintWord;
+      // const ke = new KeyboardEvent("keydown", {
+      //   bubbles: true,
+      //   cancelable: true,
+      //   keyCode: 13,
+      // });
+      // selfTurnInput.dispatchEvent(ke);
     }
     // selfTurnForm.submit();
   } catch (error) {}
