@@ -267758,7 +267758,8 @@ let suggest,
   hintInterval,
   lastSyllable,
   hintElement,
-  hintWord = "";
+  hintWord = "",
+  intervalId;
 const usedWords = [];
 
 const getSuggestStatus = () => {
@@ -267784,7 +267785,47 @@ const getHint = (syllable) => {
     }
   }
   word = potentialWords[parseInt(Math.random() * (potentialWords.length - 1))];
-  return word;
+  if (!usedWords.includes(word)) {
+    usedWords.push(word);
+    return word;
+  } else {
+    getHint(syllable);
+  }
+};
+
+const typeText = (word) => {
+  try {
+    const selfTurnInput = document.querySelector(".selfTurn form input");
+    if (selfTurnInput == null) return;
+    let wordStatus = "";
+    let i = 0;
+    selfTurnInput.value = "";
+    intervalId = setInterval(() => {
+      if (i >= word.length || word[i] == undefined) {
+        clearInterval(intervalId);
+        const selfTurnForm = document.querySelector(".selfTurn form");
+        selfTurnForm.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+        return true;
+      }
+      wordStatus += hintWord[i];
+      console.log(`[addHintText] wordStatus: ${wordStatus}`);
+      selfTurnInput.value = wordStatus;
+      i += 1;
+    }, 50);
+  } catch (error) {
+    return false;
+  }
+};
+
+const submitSelfTurnForm = () => {
+  try {
+    const selfTurnForm = document.querySelector(".selfTurn form");
+    if (selfTurnForm == null) return false;
+    selfTurnForm.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+    return true;
+  } catch (error) {
+    return false;
+  }
 };
 
 const addHintText = () => {
@@ -267792,13 +267833,15 @@ const addHintText = () => {
   const syllable = getCurrentSyllable();
   if (!(syllable !== "" && syllable !== lastSyllable)) {
     if (hintWord == "") return;
+    const selfTurn = document.querySelector(".selfTurn");
+    if (!selfTurn) return;
+    if (selfTurn.getAttribute("hidden") != null) return;
     try {
-      const selfTurnInput = document.querySelector(".selfTurn form input");
-      if (selfTurnInput == null) return;
-      selfTurnInput.value = hintWord;
-      const selfTurnForm = document.querySelector(".selfTurn form");
-      if (selfTurnForm == null) return;
-      selfTurnForm.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+      const response = typeText(hintWord);
+      if (response == true) {
+        hintWord = "";
+        submitSelfTurnForm();
+      }
     } catch (error) {
       console.log(`[addHintText] Error: ${error}`);
     }
@@ -267819,49 +267862,27 @@ const addHintText = () => {
     hintElement = document.querySelector("#hint");
     hintElement.innerHTML = `&nbsp;&nbsp;&nbsp;&nbsp; ${syllable} :: ${hintWord}`;
   } catch (error) {
-    // Do Nothing
+    console.log(`[addHintText] Error: ${error}`);
   }
 
   try {
-    const selfTurnInput = document.querySelector(".selfTurn form input");
-    if (selfTurnInput == null) return;
-
     const selfTurn = document.querySelector(".selfTurn");
     if (!selfTurn) return;
 
-    if (selfTurn.getAttribute("hidden") != null) {
+    if (selfTurn.getAttribute("hidden") == null) {
+      // MY TURN
+
+      const response = typeText(hintWord);
+      if (response == true) {
+        hintWord = "";
+        submitSelfTurnForm();
+      }
+    } else {
       //  NOT MY TURN
       //   // const sideChat = document.querySelector(".sidebar>.chat .input textarea");
       //   // if (sideChat == null) return;
       //   // sideChat.value = hintWord;
       //   // sideChat.dispatchEvent(ke);
-    } else {
-      // MY TURN
-
-      let intervalId;
-      let count = hintWord.lenght;
-      let wordStatus = "";
-      let i = 0;
-      selfTurnInput.value = "";
-      intervalId = setInterval(() => {
-        if (count <= i || hintWord[i] == undefined) {
-          clearInterval(intervalId);
-          const selfTurnForm = document.querySelector(".selfTurn form");
-          selfTurnForm.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
-          hintWord = "";
-          return;
-        }
-        // console.log(`[addHintText] count: ${count}`);
-        wordStatus += hintWord[i];
-        const keyEvent = new KeyboardEvent("keydown", {
-          key: hintWord[i].toUpperCase(),
-          bubbles: true,
-        });
-        selfTurnInput.dispatchEvent(keyEvent);
-        console.log(`[addHintText] wordStatus: ${wordStatus}`);
-        selfTurnInput.value = wordStatus;
-        i += 1;
-      }, 50);
     }
     // selfTurnForm.submit();
   } catch (error) {
